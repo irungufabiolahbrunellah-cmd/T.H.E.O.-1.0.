@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Theo AI Ultimate Complete</title>
+
+<style>
+body{margin:0;font-family:Arial;background:#111;color:white;}
+header{background:#00c853;padding:15px;text-align:center;font-size:22px;}
+button{padding:8px;margin:5px;border:none;border-radius:5px;cursor:pointer;}
+input,select{padding:5px;margin:5px;width:90%;}
+.card{background:#1e1e1e;padding:15px;margin:10px 0;border-radius:10px;}
+.section-title{color:#00e676;font-weight:bold;}
+.avatar{width:60px;height:60px;border-radius:50%;cursor:pointer;border:3px solid transparent;}
+.selected{border:3px solid #00e676;}
+.chatbox{height:120px;overflow-y:auto;background:#222;padding:10px;margin:5px 0;}
+.unlock-animation{animation:flash 1s ease 4;}
+@keyframes flash{0%{background:#111;}50%{background:#00c853;}100%{background:#111;}}
+</style>
+</head>
+<body>
+
+<header>Theo AI Ultimate Multiplayer Game</header>
+
+<!-- LOGIN -->
+<div id="auth" style="padding:20px;">
+<h2>Login</h2>
+<input id="username" placeholder="Enter username">
+<button onclick="startGame()">Enter</button>
+<p id="authMsg"></p>
+</div>
+
+<!-- GAME -->
+<div id="game" style="display:none;padding:20px;">
+
+<div class="card">
+<h3 class="section-title">Profile</h3>
+<img id="profileAvatar" class="avatar">
+<p>Name: <span id="playerName"></span></p>
+<p>XP: <span id="xp"></span></p>
+<p>Rank: <span id="rank"></span></p>
+<p>Rubies: 💎 <span id="rubies"></span></p>
+<p>Badges: 🏅 <span id="badges"></span></p>
+<p>Lives: ❤️ <span id="lives"></span></p>
+<p>Active Theo Friend: <span id="activeFriend"></span></p>
+</div>
+
+<div class="card">
+<h3 class="section-title">Select Avatar</h3>
+<img src="https://i.imgur.com/1X6KXQF.png" class="avatar" onclick="selectAvatar(this)">
+<img src="https://i.imgur.com/7D7I6dI.png" class="avatar" onclick="selectAvatar(this)">
+<img src="https://i.imgur.com/TxzC70f.png" class="avatar" onclick="selectAvatar(this)">
+<img src="https://i.imgur.com/zYxDCQT.png" class="avatar" onclick="selectAvatar(this)">
+</div>
+
+<div class="card">
+<h3 class="section-title">Theo Friends</h3>
+<div id="friendsArea"></div>
+</div>
+
+<div class="card">
+<h3 class="section-title">Lessons & Quiz</h3>
+<select id="language">
+<option>HTML</option>
+<option>CSS</option>
+<option>JavaScript</option>
+<option>Python</option>
+</select>
+<button onclick="startLesson()">Start Lesson</button>
+<div id="lessonArea"></div>
+</div>
+
+<div class="card">
+<h3 class="section-title">Theo AI Chat 🤖</h3>
+<div id="chatBox" class="chatbox"></div>
+<input id="chatInput">
+<button onclick="talkTheo()">Send</button>
+</div>
+
+<div class="card">
+<h3 class="section-title">Shop 🛍️</h3>
+<button onclick="buyLife()">Buy 1 Life (5💎)</button>
+<button onclick="buyBadge()">Buy Badge (20💎)</button>
+<p id="shopMsg"></p>
+</div>
+
+<div class="card">
+<h3 class="section-title">Quests</h3>
+<button onclick="dailyQuest()">Daily Quest (+2💎)</button>
+<button onclick="monthlyQuest()">Monthly Quest (+1 Badge)</button>
+</div>
+
+<div class="card">
+<h3 class="section-title">Leaderboard 🏆</h3>
+<div id="leaderboard"></div>
+</div>
+
+<div class="card">
+<h3 class="section-title">Global Chat</h3>
+<div id="chatGlobal" class="chatbox"></div>
+<input id="chatMsg">
+<button onclick="sendChat()">Send</button>
+</div>
+
+<div class="card">
+<h3 class="section-title">1v1 Battle Arena ⚔️</h3>
+<button onclick="startBattle()">Start Battle</button>
+<div id="battleArea"></div>
+</div>
+
+</div>
+
+<script>
+
+// PLAYER DATA
+let player={
+name:"",
+xp:0,
+rubies:0,
+badges:0,
+lives:3,
+avatar:"",
+activeFriend:"Classic Theo",
+friendsUnlocked:["Classic Theo"]
+};
+
+// THEO FRIEND SYSTEM
+const friendsData={
+"Classic Theo":{badges:0,xpBoost:1,personality:"balanced"},
+"Theo Jr":{badges:3,xpBoost:1.2,personality:"fun"},
+"Code Master Theo":{badges:5,xpBoost:1.5,personality:"strict"},
+"AI Legend Theo":{badges:10,xpBoost:2,personality:"elite"}
+};
+
+// LOGIN
+function startGame(){
+let name=document.getElementById("username").value;
+if(name===""){document.getElementById("authMsg").innerText="Enter username!";return;}
+player.name=name;
+document.getElementById("auth").style.display="none";
+document.getElementById("game").style.display="block";
+updateProfile();
+renderFriends();
+}
+
+// PROFILE
+function updateProfile(){
+document.getElementById("playerName").innerText=player.name;
+document.getElementById("xp").innerText=player.xp;
+document.getElementById("rubies").innerText=player.rubies;
+document.getElementById("badges").innerText=player.badges;
+document.getElementById("lives").innerText=player.lives;
+document.getElementById("activeFriend").innerText=player.activeFriend;
+
+let rank="Beginner";
+if(player.xp>100)rank="Intermediate";
+if(player.xp>250)rank="Pro";
+if(player.xp>500)rank="Master";
+document.getElementById("rank").innerText=rank;
+
+document.getElementById("leaderboard").innerHTML=
+player.name+" - XP: "+player.xp+" ("+rank+")";
+}
+
+// AVATAR
+function selectAvatar(img){
+document.querySelectorAll(".avatar").forEach(a=>a.classList.remove("selected"));
+img.classList.add("selected");
+player.avatar=img.src;
+document.getElementById("profileAvatar").src=img.src;
+}
+
+// FRIEND SYSTEM
+function renderFriends(){
+let area=document.getElementById("friendsArea");
+area.innerHTML="";
+for(let friend in friendsData){
+
+if(player.badges>=friendsData[friend].badges &&
+!player.friendsUnlocked.includes(friend)){
+player.friendsUnlocked.push(friend);
+document.body.classList.add("unlock-animation");
+setTimeout(()=>document.body.classList.remove("unlock-animation"),1500);
+alert(friend+" UNLOCKED!");
+}
+
+if(player.friendsUnlocked.includes(friend)){
+area.innerHTML+=`<button onclick="selectFriend('${friend}')">${friend}</button>`;
+}else{
+area.innerHTML+=`<button disabled>${friend} (Locked - ${friendsData[friend].badges} badges)</button>`;
+}
+}
+}
+
+function selectFriend(friend){
+player.activeFriend=friend;
+updateProfile();
+}
+
+// LESSON
+function startLesson(){
+let questions={
+HTML:["What tag creates paragraph?","<p>"],
+CSS:["Which property changes text color?","color"],
+JavaScript:["Keyword to declare variable?","let"],
+Python:["Keyword to define function?","def"]
+};
+
+let lang=document.getElementById("language").value;
+let q=questions[lang];
+document.getElementById("lessonArea").innerHTML=
+q[0]+"<br><input id='answer'><button onclick='checkAnswer(\""+q[1]+"\")'>Submit</button>";
+}
+
+function checkAnswer(correct){
+let ans=document.getElementById("answer").value;
+let boost=friendsData[player.activeFriend].xpBoost;
+
+if(ans.toLowerCase()===correct.toLowerCase()){
+player.xp+=Math.floor(20*boost);
+player.rubies+=3;
+alert("Correct! XP boosted by "+boost+"x");
+}else{
+player.lives--;
+alert("Wrong! -1 life");
+}
+updateProfile();
+}
+
+// THEO CHAT
+function talkTheo(){
+let input=document.getElementById("chatInput").value;
+let box=document.getElementById("chatBox");
+let personality=friendsData[player.activeFriend].personality;
+let response="";
+
+if(personality==="balanced")response="Let's grow your coding skills!";
+if(personality==="fun")response="Yayyy coding party! 🎉";
+if(personality==="strict")response="Discipline creates mastery.";
+if(personality==="elite")response="You are evolving into an AI legend.";
+
+box.innerHTML+=`<p><b>You:</b> ${input}</p>`;
+box.innerHTML+=`<p><b>${player.activeFriend}:</b> ${response}</p>`;
+box.scrollTop=box.scrollHeight;
+}
+
+// SHOP
+function buyLife(){
+if(player.rubies>=5){player.rubies-=5;player.lives++;document.getElementById("shopMsg").innerText="Life bought!";}
+else{document.getElementById("shopMsg").innerText="Not enough rubies!";}
+updateProfile();
+}
+
+function buyBadge(){
+if(player.rubies>=20){player.rubies-=20;player.badges++;renderFriends();}
+else{document.getElementById("shopMsg").innerText="Not enough rubies!";}
+updateProfile();
+}
+
+// QUESTS
+function dailyQuest(){player.rubies+=2;updateProfile();}
+function monthlyQuest(){player.badges++;renderFriends();updateProfile();}
+
+// CHAT
+function sendChat(){
+let msg=document.getElementById("chatMsg").value;
+document.getElementById("chatGlobal").innerHTML+=
+"<p><b>"+player.name+":</b> "+msg+"</p>";
+}
+
+// BATTLE
+function startBattle(){
+document.getElementById("battleArea").innerHTML=
+"Solve: What tag makes link?<br><input id='battleAns'><button onclick='checkBattle()'>Submit</button>";
+}
+
+function checkBattle(){
+let ans=document.getElementById("battleAns").value;
+let boost=friendsData[player.activeFriend].xpBoost;
+if(ans.toLowerCase()==="<a>"){
+player.xp+=Math.floor(30*boost);
+alert("Battle won! XP boosted!");
+}else{
+player.lives--;
+alert("Battle lost!");
+}
+updateProfile();
+}
+
+</script>
+
+</body>
+</html>
